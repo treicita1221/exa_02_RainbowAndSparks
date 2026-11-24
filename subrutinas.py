@@ -13,7 +13,34 @@ from datetime import datetime, timedelta
 # =====================================================================
 # SECCIÓN EMILY - Ítem 2: CRUD de categorias_fenomeno y observadores
 # =====================================================================
-# (aquí va el código de Emily)
+def insertar_categoria(bd, _id: int, nombre: str, descripcion: str):
+    return bd.categorias_fenomeno.insert_one(
+        {"_id": _id, "nombre": nombre, "descripcion": descripcion})
+
+
+def modificar_categoria(bd, _id: int, cambios: dict):
+    return bd.categorias_fenomeno.update_one({"_id": _id}, {"$set": cambios})
+
+
+def borrar_categoria(bd, _id: int):
+    return bd.categorias_fenomeno.delete_one({"_id": _id})
+
+
+def insertar_observador(bd, _id: int, alias: str, rol: str, confiabilidad: float):
+    if not 0.0 <= confiabilidad <= 1.0:
+        raise ValueError("indice_confiabilidad debe estar entre 0.0 y 1.0")
+    return bd.observadores.insert_one({"_id": _id, "alias_o_estacion": alias,
+                                       "rol": rol, "indice_confiabilidad": confiabilidad})
+
+
+def modificar_observador(bd, _id: int, cambios: dict):
+    if "indice_confiabilidad" in cambios and not 0.0 <= cambios["indice_confiabilidad"] <= 1.0:
+        raise ValueError("indice_confiabilidad debe estar entre 0.0 y 1.0")
+    return bd.observadores.update_one({"_id": _id}, {"$set": cambios})
+
+
+def borrar_observador(bd, _id: int):
+    return bd.observadores.delete_one({"_id": _id})
 
 
 # =====================================================================
