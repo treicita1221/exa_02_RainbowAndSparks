@@ -14,21 +14,28 @@ def menu():
         try:
             if op == "1":
                 insertar_categoria(bd, int(input("ID: ")), input("Nombre: "), input("Descripción: "))
+                print("Listo.")
             elif op == "2":
-                modificar_categoria(bd, int(input("ID: ")), {"nombre": input("Nuevo nombre: ")})
+                r = modificar_categoria(bd, int(input("ID: ")), {"nombre": input("Nuevo nombre: ")})
+                print("Listo." if r.matched_count else "No existe una categoría con ese ID.")
             elif op == "3":
-                borrar_categoria(bd, int(input("ID: ")))
+                r = borrar_categoria(bd, int(input("ID: ")))
+                print("Listo." if r.deleted_count else "No existe una categoría con ese ID.")
             elif op == "4":
                 insertar_observador(bd, int(input("ID: ")), input("Alias/estación: "),
                                     input("Rol: "), float(input("Confiabilidad (0-1): ")))
+                print("Listo.")
             elif op == "5":
-                modificar_observador(bd, int(input("ID: ")),
-                                     {"indice_confiabilidad": float(input("Nueva confiabilidad: "))})
+                r = modificar_observador(bd, int(input("ID: ")),
+                                         {"indice_confiabilidad": float(input("Nueva confiabilidad: "))})
+                print("Listo." if r.matched_count else "No existe un observador con ese ID.")
             elif op == "6":
-                borrar_observador(bd, int(input("ID: ")))
+                r = borrar_observador(bd, int(input("ID: ")))
+                print("Listo." if r.deleted_count else "No existe un observador con ese ID.")
             elif op == "0":
                 break
-            print("Listo.")
+            else:
+                print("Opción inválida.")
         except Exception as e:
             print("Error:", e)
 
