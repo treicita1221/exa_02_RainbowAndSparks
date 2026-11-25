@@ -7,7 +7,63 @@ from datetime import datetime, timedelta
 # =====================================================================
 # SECCIÓN JUSTIN - Ítem 1: clasificar tipo de zona y leer ubicaciones
 # =====================================================================
-# (aquí va el código de Justin)
+CANTONES_COSTEROS = {"Puntarenas", "Esparza", "Montes de Oro", "Osa", "Quepos", "Golfito",
+    "Parrita", "Corredores", "Garabito", "Liberia", "Nicoya", "Santa Cruz", "Bagaces",
+    "Carrillo", "Cañas", "Abangares", "Nandayure", "La Cruz", "Hojancha", "Limón", "Pococí",
+    "Siquirres", "Talamanca", "Matina", "Guácimo"}
+
+CANTONES_MONTANOSOS = {"Tarrazú", "Aserrí", "Mora", "Acosta", "Turrubares", "Dota",
+    "Pérez Zeledón", "León Cortés", "Puriscal", "San Ramón", "Zarcero", "Poás", "Valverde Vega",
+    "Paraíso", "Jiménez", "Turrialba", "Alvarado", "Oreamuno", "El Guarco", "Barva",
+    "Santa Bárbara", "San Rafael", "San Isidro", "Tilarán", "Buenos Aires", "Coto Brus"}
+
+POBLADOS_INSULARES = {"Isla del Coco", "Isla Chira", "Isla Venado", "Isla Caballo",
+    "Isla San Lucas", "Isla Tortuga", "Isla Cedros", "Isla Jesucita", "Isla Berrugate"}
+
+
+def normalizar(texto: str) -> str:
+    """Quita tildes, espacios extra y pasa a minúscula para comparar sin errores."""
+    texto = unicodedata.normalize("NFD", str(texto or ""))
+    texto = "".join(c for c in texto if unicodedata.category(c) != "Mn")
+    return " ".join(texto.lower().split())
+
+
+_COSTEROS = {normalizar(c) for c in CANTONES_COSTEROS}
+_MONTANOSOS = {normalizar(c) for c in CANTONES_MONTANOSOS}
+_INSULARES = {normalizar(p) for p in POBLADOS_INSULARES}
+
+
+def clasificar_tipo_zona(provincia: str, canton: str, poblado: str) -> str:
+    """Orden: primero isla, luego costa, luego montaña; si no, Urbana."""
+    if normalizar(poblado) in _INSULARES:
+        return "Insular"
+    if normalizar(canton) in _COSTEROS:
+        return "Costera"
+    if normalizar(canton) in _MONTANOSOS:
+        return "Montañosa"
+    return "Urbana"
+
+
+def leer_ubicaciones_csv(ruta: str) -> list:
+    """Lee ubicaciones.csv y devuelve una lista de diccionarios con tipo_zona agregado.
+    OJO: revisen los nombres de columnas de SU csv y ajusten COLUMNAS si cambian."""
+    COLUMNAS = {"provincia": "provincia", "canton": "canton",
+                "distrito": "distrito", "poblado": "poblado"}
+    ubicaciones = []
+    with open(ruta, encoding="utf-8-sig", newline="") as archivo:
+        muestra = archivo.read(2048)
+        archivo.seek(0)
+        separador = ";" if muestra.count(";") > muestra.count(",") else ","
+        lector = csv.DictReader(archivo, delimiter=separador)
+        for fila in lector:
+            fila = {normalizar(k): (v or "").strip() for k, v in fila.items() if k}
+            provincia = fila.get(COLUMNAS["provincia"], "")
+            canton = fila.get(COLUMNAS["canton"], "")
+            distrito = fila.get(COLUMNAS["distrito"], "")
+            poblado = fila.get(COLUMNAS["poblado"], fila.get("localidad", ""))
+            fila["tipo_zona"] = clasificar_tipo_zona(provincia, canton, poblado)
+            ubicaciones.append(fila)
+    return ubicaciones
 
 
 # =====================================================================
